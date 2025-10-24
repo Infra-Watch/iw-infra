@@ -17,6 +17,7 @@ groupadd -f devops
 echo "Grupos criados com sucesso!"
 
 echo "Criando diretórios..."
+mkdir -p /home/infra
 mkdir -p /home/infra/app-python
 mkdir -p /home/infra/app-java
 echo "Diretórios criados em /home/infra"
@@ -69,6 +70,15 @@ else
   apt install openjdk-17-jre -y
 fi
 
+echo "Baixando repositório do appclient-java..."
+cd /home/infra/app-java
+if [ ! -d "iw-appclient-java" ]; then
+  git clone https://github.com/Infra-Watch/iw-appclient-java.git
+else
+  echo "Repositório iw-appclient-java já existe, atualizando..."
+  cd iw-appclient-java && git pull
+fi
+
 echo "Verificando instalação do Python..."
 if python3 --version &>/dev/null; then
   echo "Python já instalado."
@@ -76,5 +86,19 @@ else
   echo "Instalando Python 3..."
   apt install python3 -y
 fi
+echo "Instalando dependência python3-venv..."
+apt install python3-venv -y
+
+
+cd /home/infra/app-python
+if [ ! -d "iw-appclient-python" ]; then
+  git clone https://github.com/Infra-Watch/iw-appclient-python.git
+fi
+cd iw-appclient-python  
+git pull || true
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python ./app/main.py
 
 echo "✅ Ambiente de aplicações (Java/Python) configurado com sucesso!"
