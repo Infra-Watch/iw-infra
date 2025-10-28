@@ -112,17 +112,8 @@ fi
 # Projeto Node
 # ----------------------------
 echo "Preparando diretório do projeto Node..."
-mkdir -p /infraweb/app-node
-chmod -R 777 /infraweb/app-node
-
-echo "Baixando repositório do projeto..."
-cd /infraweb/app-node
-if [ ! -d "iw-appweb" ]; then
-  git clone https://github.com/Infra-Watch/iw-appweb.git
-else
-  echo "Repositório iw-appweb já existe, atualizando..."
-  cd iw-appweb && git pull
-fi
+mkdir -p ./infraweb/app-node
+chmod -R 777 ./infraweb/app-node
 
 # ----------------------------
 # Dockerfile do projeto Node
@@ -131,9 +122,8 @@ echo "Criando Dockerfile do projeto Node..."
 cat << EOF > /infraweb/app-node/iw-appweb/Dockerfile
 FROM node:latest
 WORKDIR /app
-COPY package*.json ./
+RUN git clone https://github.com/Infra-Watch/iw-appweb.git
 RUN npm install
-COPY . .
 EXPOSE 3333
 CMD ["npm", "start"]
 EOF
@@ -142,7 +132,7 @@ EOF
 # Build da imagem Node
 # ----------------------------
 echo "Verificando se imagem iw-node:v1 já existe..."
-cd /infraweb/app-node/iw-appweb
+cd ./infraweb/app-node/iw-appweb
 if [ "$(docker images -q iw-node:v1)" ]; then
   echo "Imagem iw-node:v1 já existe, pulando build."
 else
