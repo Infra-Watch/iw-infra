@@ -119,7 +119,7 @@ chmod -R 777 ./infraweb/app-node
 # Dockerfile do projeto Node
 # ----------------------------
 echo "Criando Dockerfile do projeto Node..."
-cat << EOF > ./infraweb/app-node/iw-appweb/Dockerfile
+cat << EOF > ./infraweb/app-node/Dockerfile
 FROM node:latest
 WORKDIR /app
 RUN git clone https://github.com/Infra-Watch/iw-appweb.git
@@ -132,7 +132,7 @@ EOF
 # Build da imagem Node
 # ----------------------------
 echo "Verificando se imagem iw-node:v1 já existe..."
-cd ./infraweb/app-node/iw-appweb
+cd ./infraweb/app-node/
 if [ "$(docker images -q iw-node:v1)" ]; then
   echo "Imagem iw-node:v1 já existe, pulando build."
 else
