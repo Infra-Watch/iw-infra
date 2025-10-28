@@ -123,6 +123,7 @@ cat << EOF > ./infraweb/app-node/Dockerfile
 FROM node:latest
 WORKDIR /app
 RUN git clone https://github.com/Infra-Watch/iw-appweb.git
+WORKDIR /app/iw-appweb
 RUN npm install
 EXPOSE 3333
 CMD ["npm", "start"]
