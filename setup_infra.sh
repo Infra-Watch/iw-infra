@@ -97,13 +97,20 @@ fi
 # ----------------------------
 echo "Verificando container MySQL..."
 if [ ! "$(docker ps -aq -f name=iw-mysql)" ]; then
-  echo "Baixando imagem MySQL e criando container..."
-  docker pull mysql:8
+  mkdir infradb
+  echo "Criando Dockerfile do banco de dados..."
+  cat << EOF > ./infradb/Dockerfile
+    FROM mysql:8
+    WORKDIR /docker-entrypoint-initdb.d
+    RUN git clone https://github.com/Infra-Watch/iw-database.git
+    EXPOSE 3306
+  EOF 
+  docker build -t iw-mysql:v1 ./infradb/Dockerfile
   docker run -d -p 3306:3306 \
     --name iw-mysql \
     -e "MYSQL_DATABASE=infrawatch" \
     -e "MYSQL_ROOT_PASSWORD=urubu100" \
-    mysql:8
+    iw-mysql:v1
 else
   echo "Container iw-mysql já existe."
 fi
