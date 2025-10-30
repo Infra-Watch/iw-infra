@@ -61,14 +61,12 @@ usermod -aG infrawatch malu
 usermod -aG infrawatch anthony
 echo "Usuários atribuídos aos grupos."
 
-timedatectl set-timezone America/Sao_Paulo
-
 echo "Verificando instalação do Java..."
 if java -version &>/dev/null; then
   echo "Java já instalado."
 else
-  echo "Instalando OpenJDK 17..."
-  apt install openjdk-17-jre -y
+  echo "Instalando OpenJDK 21..."
+  apt install openjdk-21-jre -y
 fi
 
 echo "Baixando repositório do appclient-java..."
@@ -79,6 +77,8 @@ else
   echo "Repositório iw-appclient-java já existe, atualizando..."
   cd iw-appclient-java && git pull
 fi
+
+nohup java -jar iw-appclient-java-1.0-SNAPSHOT.jar &
 
 echo "Verificando instalação do Python..."
 if python3 --version &>/dev/null; then
