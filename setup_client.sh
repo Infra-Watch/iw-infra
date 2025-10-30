@@ -59,8 +59,9 @@ usermod -aG infrawatch daniela
 usermod -aG infrawatch davi
 usermod -aG infrawatch malu
 usermod -aG infrawatch anthony
-
 echo "Usuários atribuídos aos grupos."
+
+timedatectl set-timezone America/Sao_Paulo
 
 echo "Verificando instalação do Java..."
 if java -version &>/dev/null; then
@@ -99,6 +100,6 @@ git pull || true
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python ./app/main.py
+nohup ./venv/bin/python3 ./app/main.py &
 
 echo "✅ Ambiente de aplicações (Java/Python) configurado com sucesso!"
