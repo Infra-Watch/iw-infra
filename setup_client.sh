@@ -24,8 +24,8 @@ echo "Diretórios criados em /home/infra"
 
 echo "Atribuindo permissões..."
 apt install acl -y
-chmod 770 /home/infra/app-python
-chmod 770 /home/infra/app-java
+chmod 777 /home/infra/app-python
+chmod 777 /home/infra/app-java
 setfacl -m g:infrawatch:r-x /home/infra/app-python
 setfacl -m g:infrawatch:r-x /home/infra/app-java
 
@@ -78,7 +78,9 @@ else
   cd iw-appclient-java && git pull
 fi
 
-nohup java -jar iw-appclient-java-1.0-SNAPSHOT.jar &
+echo "Iniciando executável .jar..."
+nohup java -jar /home/infra/app-java/iw-appclient-java/iw-appclient-java-1.0-SNAPSHOT.jar &
+echo ""
 
 echo "Verificando instalação do Python..."
 if python3 --version &>/dev/null; then
@@ -100,6 +102,9 @@ git pull || true
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-nohup ./venv/bin/python3 ./app/main.py &
 
-echo "✅ Ambiente de aplicações (Java/Python) configurado com sucesso!"
+echo "Iniciando script python..."
+nohup /home/infra/app-python/iw-appclient-python/venv/bin/python3 /home/infra/app-python/iw-appclient-python/app/main.py &
+echo ""
+
+echo "✅ Ambiente de aplicações (Java/Python) configurado com sucesso! Sua máquina já está sendo monitorada!"
