@@ -92,29 +92,32 @@ else
   systemctl enable docker
 fi
 
+  mkdir ./infradb
+  cd ./infradb
+  git clone https://github.com/Infra-Watch/iw-database.git
+  echo "Criando Dockerfile do banco de dados..."
+  cat << EOF > ./Dockerfile
+    FROM mysql:8.0.41
+    WORKDIR /docker-entrypoint-initdb.d
+    COPY ./iw-database/scriptBD.sql .
+    EXPOSE 3306
+EOF
+
 # ----------------------------
 # Container MySQL
 # ----------------------------
 echo "Verificando container MySQL..."
 if [ ! "$(docker ps -aq -f name=iw-mysql)" ]; then
-  mkdir infradb
-  echo "Criando Dockerfile do banco de dados..."
-  cat << EOF > ./infradb/Dockerfile
-    FROM mysql:8
-    WORKDIR /docker-entrypoint-initdb.d
-    RUN git clone https://github.com/Infra-Watch/iw-database.git
-    EXPOSE 3306
-  EOF 
-  docker build -t iw-mysql:v1 ./infradb/Dockerfile
+  docker build -t iw-mysql:v1 .
   docker run -d -p 3306:3306 \
     --name iw-mysql \
-    -e "MYSQL_DATABASE=infrawatch" \
     -e "MYSQL_ROOT_PASSWORD=urubu100" \
     iw-mysql:v1
 else
   echo "Container iw-mysql já existe."
 fi
-
+cd ..
+rm -r ./infradb
 # ----------------------------
 # Projeto Node
 # ----------------------------
@@ -147,7 +150,8 @@ else
   echo "Construindo imagem Docker..."
   docker build -t iw-node:v1 .
 fi
-
+cd ../..
+rm -r ./infraweb
 # ----------------------------
 # Container do site
 # ----------------------------
