@@ -25,20 +25,15 @@ groupadd -f front-end
 groupadd -f devops
 
 # ----------------------------
-# Criação de diretórios
+# Diretórios e ACL
 # ----------------------------
 echo "Criando diretórios..."
 mkdir -p /infraweb/banco
 mkdir -p /infraweb/app-node
 chmod -R 770 /infraweb
 
-# ----------------------------
-# Permissões e ACL
-# ----------------------------
-echo "Atribuindo permissões..."
+echo "Setando ACL..."
 apt install -y acl
-chmod 770 /infraweb/banco
-chmod 770 /infraweb/app-node
 setfacl -m g:infrawatch:r-x /infraweb/banco
 setfacl -m g:infrawatch:r-x /infraweb/app-node
 
@@ -54,7 +49,6 @@ criar_usuario() {
   else
     useradd -m "$usuario"
     echo "$usuario:$senha" | chpasswd
-    echo "Usuário $usuario criado com sucesso!"
   fi
 }
 
@@ -72,100 +66,29 @@ usermod -aG infrawatch machado
 usermod -aG infrawatch davi
 usermod -aG infrawatch anthony
 
-echo "Usuários atribuídos aos grupos."
+# ----------------------------
+# Instalação do Docker
+# ----------------------------
+echo "Instalando Docker..."
+apt install -y docker.io
+systemctl enable docker
+systemctl start docker
 
 # ----------------------------
-# Dependências principais
+# Instalação do Docker Compose
 # ----------------------------
-echo "Instalando dependências básicas..."
-apt install -y docker.io git
+echo "Instalando Docker Compose..."
+curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+  -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 
-# ----------------------------
-# Docker
-# ----------------------------
-echo "Verificando Docker..."
-if systemctl is-active --quiet docker; then
-  echo "Docker já está ativo."
-else
-  echo "Iniciando e habilitando Docker..."
-  systemctl start docker
-  systemctl enable docker
-fi
+echo "Rodando serviços com Docker Compose..."
 
-  mkdir ./infradb
-  cd ./infradb
-  git clone https://github.com/Infra-Watch/iw-database.git
-  echo "Criando Dockerfile do banco de dados..."
-  cat << EOF > ./Dockerfile
-    FROM mysql:8.0.41
-    WORKDIR /docker-entrypoint-initdb.d
-    COPY ./iw-database/scriptBD.sql .
-    EXPOSE 3306
-EOF
+cd /home/ubuntu/iw-infra   
 
-# ----------------------------
-# Container MySQL
-# ----------------------------
-echo "Verificando container MySQL..."
-if [ ! "$(docker ps -aq -f name=iw-mysql)" ]; then
-  docker build -t iw-mysql:v1 .
-  docker run -d -p 3306:3306 \
-    --name iw-mysql \
-    -e "MYSQL_ROOT_PASSWORD=urubu100" \
-    iw-mysql:v1
-else
-  echo "Container iw-mysql já existe."
-fi
-cd ..
-rm -r ./infradb
-# ----------------------------
-# Projeto Node
-# ----------------------------
-echo "Preparando diretório do projeto Node..."
-mkdir -p ./infraweb/app-node
-chmod -R 777 ./infraweb/app-node
+docker-compose up -d
 
-# ----------------------------
-# Dockerfile do projeto Node
-# ----------------------------
-echo "Criando Dockerfile do projeto Node..."
-cat << EOF > ./infraweb/app-node/Dockerfile
-FROM node:latest
-WORKDIR /app
-RUN git clone https://github.com/Infra-Watch/iw-appweb.git
-WORKDIR /app/iw-appweb
-RUN npm install
-EXPOSE 3333
-CMD ["npm", "start"]
-EOF
+echo "Containers ativos:"
+docker ps
 
-# ----------------------------
-# Build da imagem Node
-# ----------------------------
-echo "Verificando se imagem iw-node:v1 já existe..."
-cd ./infraweb/app-node/
-if [ "$(docker images -q iw-node:v1)" ]; then
-  echo "Imagem iw-node:v1 já existe, pulando build."
-else
-  echo "Construindo imagem Docker..."
-  docker build -t iw-node:v1 .
-fi
-cd ../..
-rm -r ./infraweb
-# ----------------------------
-# Container do site
-# ----------------------------
-echo "Verificando container do site..."
-if [ "$(docker ps -aq -f name=iw-site)" ]; then
-  echo "Recriando container iw-site com nova imagem..."
-  docker rm -f iw-site
-  docker run -d --name iw-site -p 3333:3333 iw-node:v1
-else
-  echo "Criando container iw-site..."
-  docker run -d --name iw-site -p 3333:3333 iw-node:v1
-fi
-
-# ----------------------------
-# Finalização
-# ----------------------------
-echo "✅ Infraestrutura (Node + MySQL + Docker) configurada com sucesso!"
+echo "✅ Infraestrutura configurada com sucesso!"
