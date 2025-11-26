@@ -1,0 +1,5 @@
+FROM mysql:8.0.41
+ENV MYSQL_ROOT_PASSWORD=urubu100
+WORDIR /docker-entrypoint-initdb.d
+RUN wget https://raw.githubusercontent.com/Infra-Watch/iw-database/refs/heads/main/scriptBD.sql
+EXPOSE 3306
