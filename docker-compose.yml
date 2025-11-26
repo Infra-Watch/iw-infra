@@ -1,0 +1,21 @@
+services:
+  mysql:
+    container_name: iw-database
+    image: davidomingues/meu_bd:v1
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: urubu100
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  node:
+    container_name: iw-site
+    image: davidomingues/meu_site:v1
+    restart: always
+    ports:
+      - "3333:3333"
+
+volumes:
+  mysql_data:
